@@ -1,0 +1,2 @@
+[workspace]
+members = ["ipc2_host", "ipc2_worker", "ipc2_common"]

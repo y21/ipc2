@@ -1,0 +1,18 @@
+[package]
+name = "ipc2_host"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+thiserror = "1.0.31"
+tokio = { version = "1", features = ["full"] }
+ipc2_common = { path = "../ipc2_common" }
+serde = { version = "1", features = ["derive"] }
+log = "0.4.17"
+anyhow = "1.0.58"
+parking_lot = "0.12.1"
+num_cpus = "1.13.1"
+futures-util = "0.3.21"
+async-trait = "0.1.56"
