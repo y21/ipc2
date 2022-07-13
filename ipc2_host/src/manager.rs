@@ -190,9 +190,9 @@ async fn run_worker_event_loop<S: Server, R: DeserializeOwned>(
                     .take_job(job_id)
                     .with_context(|| format!("Received invalid job id from worker: {job_id}"))?;
 
-                sender
-                    .send(data)
-                    .map_err(|_| anyhow::anyhow!("Receiver end was dropped"))?;
+                // We don't care if the receiver end gets dropped
+                // That usually means that the request is timed out.
+                let _ = sender.send(data);
             }
         };
         Ok(())
