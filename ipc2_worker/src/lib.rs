@@ -24,9 +24,9 @@ pub enum ConnectError {
     Io(#[from] io::Error),
 }
 
-pub struct Job<R: DeserializeOwned, W: Serialize> {
-    pub data: R,
-    pub tx: oneshot::Sender<W>,
+pub enum Job<R: DeserializeOwned, W: Serialize> {
+    Unidirectional { data: R },
+    Bidirectional { data: R, tx: oneshot::Sender<W> },
 }
 
 pub type ClientSocketReader<C, R> = SocketReader<<C as Client>::Reader, ServerSocketMessage<R>>;
@@ -68,10 +68,16 @@ async fn run_message_loop<C: Client, R: DeserializeOwned, W: Serialize>(
 ) {
     while let Ok(message) = reader.recv().await {
         match message {
+            ServerSocketMessage::Unidirectional { data } => {
+                if let Err(..) = tx.send(Job::Unidirectional { data }) {
+                    log::debug!("Event loop receiver was dropped. Exiting.");
+                    break;
+                }
+            }
             ServerSocketMessage::Bidirectional { data, job_id } => {
                 let (tx2, rx2) = oneshot::channel();
 
-                if let Err(..) = tx.send(Job { data, tx: tx2 }) {
+                if let Err(..) = tx.send(Job::Bidirectional { data, tx: tx2 }) {
                     log::debug!("Event loop receiver was dropped. Exiting.");
                     break;
                 }

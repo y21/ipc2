@@ -67,11 +67,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         /* Type of worker->host message */ u32
     >().await?;
 
-    while let Some(Job { data, tx }) = rx.recv().await {
-        let _ = tx.send(match data {
-            HostMessage::Add(a, b) => a + b,
-            HostMessage::Sub(a, b) => a - b
-        });
+    while let Some(job) = rx.recv().await {
+        match job {
+            Job::Bidirectional { data, tx } => {
+                let _ = tx.send(match data {
+                    HostMessage::Add(a, b) => a + b,
+                    HostMessage::Sub(a, b) => a - b
+                });
+            },
+            Job::Unidirectional { .. } => unreachable!()
+        };
     }
 
     Ok(())

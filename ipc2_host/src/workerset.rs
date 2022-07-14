@@ -214,4 +214,16 @@ impl<S: Server, R: Send + 'static + DeserializeOwned, W: Send + 'static + Serial
     ) -> Result<R, WorkerSetJobError> {
         self.send_inner(data, Some((timeout, action))).await
     }
+
+    /// Sends an unidirectional message, i.e. a message with no expected response.
+    pub async fn send_unidirectional(&self, data: W) -> Result<(), WorkerSetJobError> {
+        let worker = self
+            .pop_worker()
+            .ok_or_else(|| WorkerSetJobError::NoWorker)?;
+
+        worker.send(EventLoopMessage::Unidirectional { data })?;
+
+        self.add_worker(worker);
+        Ok(())
+    }
 }

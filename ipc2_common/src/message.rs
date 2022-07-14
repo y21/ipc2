@@ -3,6 +3,7 @@ use serde::Serialize;
 
 #[derive(Deserialize, Serialize)]
 pub enum ServerSocketMessage<T> {
+    Unidirectional { data: T },
     Bidirectional { data: T, job_id: u32 },
 }
 

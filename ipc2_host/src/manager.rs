@@ -24,6 +24,8 @@ use crate::worker::Worker;
 
 /// Event loop messages.
 pub enum EventLoopMessage<R, W> {
+    /// An unidirectional message to the worker.
+    Unidirectional { data: W },
     /// A bidirectional message to the worker.
     ///
     /// The subprocess is expected to respond to this message.
@@ -142,6 +144,11 @@ async fn run_event_loop<S: Server, R, W: Serialize>(
                 let job_id = state.add_job(tx);
                 writer
                     .send(ServerSocketMessage::Bidirectional { data, job_id })
+                    .await?;
+            }
+            EventLoopMessage::Unidirectional { data } => {
+                writer
+                    .send(ServerSocketMessage::Unidirectional { data })
                     .await?;
             }
             EventLoopMessage::Close => return Ok(ControlFlow::Break(())),
